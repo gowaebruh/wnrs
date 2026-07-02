@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#7c0409">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Strangers">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<title>We're Not Really Strangers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#a3080f;
+    --bg-vignette: radial-gradient(ellipse at 50% 15%, #c00e17 0%, #a3080f 55%, #7c0409 100%);
+    --paper:#fffdf8;
+    --paper-shadow:#e8c9c9;
+    --ink:#17100e;
+    --ink-soft:#665a56;
+    --muted:#ffd7d5;
+    --panel:#8c0912;
+    --panel-line:#c33038;
+
+    --c1:#a3080f; /* perception - red */
+    --c1-soft:#f5dcdc;
+    --c2:#a3080f; /* connection - red */
+    --c2-soft:#f5dcdc;
+    --c3:#a3080f; /* reflection - red */
+    --c3-soft:#f5dcdc;
+    --cw:#17100e; /* wildcard - black/ink */
+    --cw-soft:#eae7e5;
+    --cf:#a3080f; /* final */
+    --cd:#2b2440; /* depth - midnight plum */
+    --cd-soft:#e8e5f0;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  html,body{height:100%;}
+  html{background:#7c0409;}
+  body{
+    background:var(--bg-vignette);
+    color:var(--paper);
+    font-family:'Inter',sans-serif;
+    height:100vh;
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:14px 14px calc(16px + env(safe-area-inset-bottom));
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+    overscroll-behavior:none;
+  }
+
+  .wrap{width:100%;max-width:560px;height:100%;display:flex;flex-direction:column;}
+
+  header{text-align:center;margin-bottom:10px;flex:0 0 auto;}
+  .eyebrow{
+    font-size:10px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:4px;
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:24px;
+    line-height:1.05;
+    margin:0 0 2px;
+    letter-spacing:-0.01em;
+  }
+  h1 em{font-style:italic;font-weight:500;color:var(--paper);}
+  .sub{display:none;}
+
+  /* ---------- level tabs ---------- */
+  .tabs{
+    display:flex;
+    gap:6px;
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:14px;
+    padding:5px;
+    margin:10px 0 10px;
+    flex:0 0 auto;
+  }
+  .tab{
+    flex:1;
+    border:none;
+    background:transparent;
+    color:var(--muted);
+    font-family:'Inter',sans-serif;
+    font-size:12.5px;
+    font-weight:600;
+    letter-spacing:.02em;
+    padding:10px 4px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:background .2s, color .2s;
+  }
+  .tab.active{background:#242832;color:var(--paper);}
+  .tab .dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:6px;position:relative;top:-1px;}
+
+  /* ---------- progress ---------- */
+  .progress-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:10.5px;
+    color:var(--muted);
+    margin-bottom:8px;
+    padding:0 2px;
+    flex:0 0 auto;
+  }
+  .progress-bar{
+    flex:1;
+    height:3px;
+    background:var(--panel-line);
+    border-radius:3px;
+    margin:0 12px;
+    overflow:hidden;
+  }
+  .progress-fill{height:100%;border-radius:3px;transition:width .35s ease, background .3s ease;}
+
+  /* ---------- card stage ---------- */
+  .stage{
+    perspective:1600px;
+    flex:1 1 auto;
+    min-height:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    margin-bottom:12px;
+  }
+  .deck-shadow-card{
+    position:absolute;
+    width:100%;
+    height:100%;
+    max-width:520px;
+    border-radius:26px;
+    background:var(--paper-shadow);
+    transform:translate(8px,10px);
+  }
+  .card{
+    width:100%;
+    height:100%;
+    max-width:520px;
+    position:relative;
+    transform-style:preserve-3d;
+    transition:transform .65s cubic-bezier(.2,.8,.2,1);
+    cursor:pointer;
+  }
+  .card.flipped{transform:rotateY(180deg);}
+  .card.shake{animation:shake .4s ease;}
+  @keyframes shake{
+    0%,100%{transform:translateX(0) rotateY(var(--ry,0deg));}
+    25%{transform:translateX(-6px) rotateY(var(--ry,0deg));}
+    75%{transform:translateX(6px) rotateY(var(--ry,0deg));}
+  }
+
+  .face{
+    position:absolute;
+    inset:0;
+    border-radius:20px;
+    backface-visibility:hidden;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 20px 45px -12px rgba(0,0,0,.55);
+  }
+  .face-back{
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.05) 0 2px, transparent 2px 14px),
+      linear-gradient(160deg,#c00e17,#8c0912);
+    border:1px solid #d33840;
+    align-items:center;
+    justify-content:center;
+  }
+  .face-back .mark{
+    width:88px;height:88px;border-radius:50%;
+    border:1.5px solid rgba(255,255,255,.5);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-style:italic;font-size:30px;color:rgba(255,255,255,.85);
+  }
+  .face-back .back-label{
+    margin-top:16px;font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.55);
+  }
+
+  /* ---- Depth deck: after-hours / camcorder mood, no third-party art ---- */
+  .face-back.vhs{
+    background:
+      repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(135deg, rgba(255,255,255,.04) 0 2px, transparent 2px 14px),
+      linear-gradient(165deg,#241d38,#120e1c);
+    border:1px solid #3a3155;
+    position:relative;
+    overflow:hidden;
+  }
+  .face-back.vhs::before{
+    content:'';
+    position:absolute;inset:0;
+    background:linear-gradient(transparent 0%, rgba(255,255,255,.06) 50%, transparent 100%);
+    background-size:100% 6px;
+    animation:vhsScan 5s linear infinite;
+    pointer-events:none;
+  }
+  @keyframes vhsScan{0%{transform:translateY(-10%)} 100%{transform:translateY(110%)}}
+  .face-back.vhs .mark{border-color:rgba(232,229,240,.4);color:rgba(232,229,240,.8);}
+  .face-back.vhs .back-label{color:rgba(232,229,240,.5);}
+  .vhs-hud{
+    position:absolute;
+    left:16px;right:16px;bottom:14px;
+    display:flex;justify-content:space-between;align-items:flex-end;
+    font-family:'Inter',monospace;
+    font-size:10px;
+    letter-spacing:.05em;
+    color:rgba(232,229,240,.45);
+  }
+  .vhs-hud .rec{display:flex;align-items:center;gap:5px;}
+  .vhs-hud .rec .dot{width:6px;height:6px;border-radius:50%;background:#e0455a;animation:recBlink 1.2s ease-in-out infinite;}
+  @keyframes recBlink{0%,100%{opacity:1} 50%{opacity:.2}}
+
+  .face-front{
+    background:var(--paper);
+    color:var(--ink);
+    transform:rotateY(180deg);
+    padding:clamp(20px,5vh,36px) clamp(20px,5vw,34px) clamp(18px,4vh,28px);
+    justify-content:space-between;
+    background-image: radial-gradient(circle at 100% 0%, rgba(163,8,15,.06), transparent 60%);
+  }
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .seal{
+    width:clamp(40px,7vh,54px);height:clamp(40px,7vh,54px);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-weight:600;font-size:clamp(15px,2.4vh,19px);
+    border:1.5px solid currentColor;
+    flex-shrink:0;
+  }
+  .kicker{
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--ink-soft);text-align:right;line-height:1.5;padding-top:4px;
+  }
+  .kicker b{display:block;font-size:11.5px;letter-spacing:.14em;color:var(--c1);}
+
+  .card-question{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:clamp(22px,4.6vh,34px);
+    line-height:1.26;
+    margin:clamp(14px,3vh,26px) 0 0;
+    flex:1;
+    display:flex;
+    align-items:center;
+  }
+  .card-question.small{font-size:clamp(19px,3.8vh,28px);}
+
+  .card-foot{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    font-size:11px;color:var(--ink-soft);letter-spacing:.04em;
+  }
+
+  .empty-face{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;gap:10px;color:var(--ink-soft);
+  }
+  .empty-face h3{font-family:'Fraunces',serif;font-size:20px;margin:0;color:var(--ink);}
+  .empty-face p{font-size:12.5px;margin:0;max-width:210px;line-height:1.5;}
+
+  /* ---------- controls ---------- */
+  .controls{display:flex;gap:10px;flex:0 0 auto;}
+  .btn{
+    flex:1;
+    padding:14px 18px;
+    border-radius:14px;
+    border:none;
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:13.5px;
+    letter-spacing:.01em;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:transform .12s, filter .15s;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn-primary{background:var(--paper);color:var(--ink);}
+  .btn-primary:hover{filter:brightness(1.03);}
+  .btn-ghost{
+    background:transparent;color:var(--muted);
+    border:1px solid rgba(255,255,255,.4);
+    flex:0 0 auto;
+    width:52px;
+  }
+  .btn-ghost:hover{color:var(--paper);border-color:#fff;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+
+  footer{
+    margin-top:8px;
+    text-align:center;
+    font-size:10.5px;
+    color:var(--muted);
+    line-height:1.5;
+    flex:0 0 auto;
+  }
+  footer button{
+    background:none;border:none;color:var(--muted);
+    text-decoration:underline;cursor:pointer;font-size:11px;font-family:inherit;
+    padding:0;
+  }
+  footer button:hover{color:var(--paper);}
+
+  .toast{
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--paper);color:var(--ink);
+    padding:11px 18px;border-radius:999px;font-size:12.5px;font-weight:600;
+    box-shadow:0 12px 30px rgba(0,0,0,.4);
+    opacity:0;transition:opacity .25s, transform .25s;
+    pointer-events:none;
+    z-index:20;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:380px){
+    h1{font-size:20px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">A pass-and-play conversation game</div>
+    <h1>We're Not Really <em>Strangers</em></h1>
+    <p class="sub">Pick a deck, draw a card, and answer out loud. No winning — just honesty.</p>
+  </header>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="progress-row">
+    <span id="progressLabel">0 / 0 drawn</span>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <span id="deckName">Perception</span>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="deck-shadow-card" id="shadowCard"></div>
+    <div class="card" id="card">
+      <div class="face face-back" id="cardBack">
+        <div>
+          <div class="mark" id="backMark">✳</div>
+          <div class="back-label" id="backLabel">Tap to draw</div>
+        </div>
+        <div class="vhs-hud" id="vhsHud" style="display:none;">
+          <span class="rec"><span class="dot"></span>REC</span>
+          <span id="vhsTime">00:00:00</span>
+        </div>
+      </div>
+      <div class="face face-front" id="cardFront">
+        <!-- filled by JS -->
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-primary" id="drawBtn">Draw a card</button>
+    <button class="btn btn-ghost" id="shuffleBtn" title="Reshuffle this deck">⟳</button>
+  </div>
+
+  <footer>
+    <span id="remainingNote">70 cards left in Perception</span><br>
+    <button id="resetAll">Reset all decks</button>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------------------------------------------------
+   DATA — the official "We're Not Really Strangers" deck
+   (2-player edition). Each level's wildcards and reminders
+   are shuffled in with that level's questions, exactly like
+   the physical deck, plus the one-off Final Card.
+   tag: null | 'wildcard' | 'reminder'
+---------------------------------------------------------- */
+const RAW = [
+// ---- Level 1: Perception ----
+[1,"Maintain eye contact for thirty seconds. What did you notice?","wildcard"],
+[1,"Close your eyes. What color is my shirt?","wildcard"],
+[1,"Ask and answer the next question in a different accent. (Both players)","wildcard"],
+[1,"Think of your favorite childhood TV show of all time. On the count of 3, say it out loud! (Both players)","wildcard"],
+[1,"Draw a picture together. (30 seconds)","wildcard"],
+[1,"Rate your dancing skills on a scale of 1–10. On the count of three, say your answers out loud! (Both players)","wildcard"],
+[1,"Draw a portrait of each other to the best of your ability. (1 minute) Then exchange.","wildcard"],
+[1,"Make an assumption about me. (Both players)","wildcard"],
+[1,"Close your eyes. What color are my eyes?","wildcard"],
+[1,"Write down something others would never guess about you just by looking at you. (Both players) Compare.","wildcard"],
+[1,"Let go of your attachment to the outcome.","reminder"],
+[1,"Think of your favorite brand of cereal. On the count of 3, say your answers out loud! (Both players)","wildcard"],
+[1,"Do you think I intimidate others? Why or why not?"],
+[1,"Do you think I've ever been fired from a job? If so, what for?"],
+[1,"What does my Instagram tell you about me?"],
+[1,"What is my body language telling you right now?"],
+[1,"What fast food restaurant do you think I'm most likely to drive through? What's my order?"],
+[1,"What do you think my go-to karaoke song is?"],
+[1,"What was your first impression of me?"],
+[1,"Do I seem like a coffee or tea person? Sweetened or unsweetened?"],
+[1,"What's the first thing you noticed about me?"],
+[1,"What subject do you think I thrived in at school? Did I fail any?"],
+[1,"What about me intrigues you?"],
+[1,"Do I seem like a morning person or a night owl? Why?"],
+[1,"What does my phone wallpaper tell you about me?"],
+[1,"If you were to buy me a present, knowing nothing about me other than what I look like, what would it be?"],
+[1,"What compliment do you think I hear the most?"],
+[1,"Do I look kind? Explain."],
+[1,"What about me is most strange or unfamiliar to you?"],
+[1,"How likely am I to go camping? How high maintenance is my set up?"],
+[1,"What do you think is the hardest part of what I do for a living?"],
+[1,"What reality show do you think I'm most likely to binge watch? Explain."],
+[1,"Do I seem like a cat or dog person?"],
+[1,"What do my shoes tell you about me?"],
+[1,"Do I seem like more of a creative or analytical type? Explain."],
+[1,"How many speeding tickets do you think I've gotten in my life?"],
+[1,"Do I seem like someone who would get a name tattooed on myself? Why or why not?"],
+[1,"What do you think I'm most likely to splurge on?"],
+[1,"Finish the sentence: Just by looking at you I'd think ________."],
+[1,"What character would I play in a movie?"],
+[1,"Do I remind you of anyone?"],
+[1,"Who do you think my celebrity crush is?"],
+[1,"Do you think I've ever checked an ex's phone for evidence?"],
+[1,"Do you think I was popular in school? Explain."],
+[1,"On a scale of 1–10, how messy do you think my car is? 1 being cleanest, 10 being a complete disaster. Explain."],
+[1,"Do you think I fall in love easily? Why or why not?"],
+[1,"Do you think plants thrive or die in my care? Explain."],
+[1,"Do you think I'm usually early, on time, or late to events? Explain."],
+[1,"If MySpace were still a thing, what would my profile song be?"],
+[1,"As a child, what do you think I wanted to be?"],
+
+// ---- Level 2: Connection ----
+[2,"Be more interested in understanding others than being understood.","reminder"],
+[2,"Press shuffle on your music library. Explain the first song that comes up!","wildcard"],
+[2,"Draw your current mood. Then compare. (Both players)","wildcard"],
+[2,"Sing the chorus of your favorite song of all time. Get into it!","wildcard"],
+[2,"Both players write the three most important things in life to you. (30 seconds) Compare.","wildcard"],
+[2,"Create a secret handshake!","wildcard"],
+[2,"Both players write an embarrassing fun fact about yourselves. Play a game of rock, paper, scissors — loser must reveal.","wildcard"],
+[2,"Show the first photo in your camera roll. Explain.","wildcard"],
+[2,"Think of something you strongly dislike that most people love. On the count of 3, say it out loud! (Both players)","wildcard"],
+[2,"Questions are an art form. Create your own question.","wildcard"],
+[2,"Staring contest. First to blink must reveal a personal problem and ask your partner for advice on how they might handle it.","wildcard"],
+[2,"Ask a question you'd be too afraid to ask. Something you wouldn't dare to ask.","wildcard"],
+[2,"Admit something.","wildcard"],
+[2,"Call someone you admire and tell them why you appreciate them! (Put them on speaker phone)","wildcard"],
+[2,"Swap sweats with your partner.","wildcard"],
+[2,"What are you more afraid of, failure or success? And why?"],
+[2,"What is your first love's name, and the reason you fell in love with them?"],
+[2,"If you have, when was the moment you realized you weren't invincible?"],
+[2,"What was your mother's name? And the most beautiful thing about her?"],
+[2,"How can you become a better person?"],
+[2,"Have you ever told someone \"I love you\" but didn't mean it? If so, why?"],
+[2,"What is the last thing you lied to your mother about?"],
+[2,"What is a dream you've let go of?"],
+[2,"Are you missing anyone right now? Do you think they are missing you too?"],
+[2,"What's the most pain you've ever been in that wasn't physical?"],
+[2,"If you could get to know someone in your life on a deeper level, who would it be and why?"],
+[2,"What are you still trying to prove to yourself?"],
+[2,"Are you lying to yourself about anything?"],
+[2,"What lesson took you the longest to unlearn?"],
+[2,"Do you think the image you have of yourself matches the image people see you as?"],
+[2,"If you could have it your way: who would you be with? Where would you be? And what would you be doing?"],
+[2,"Is there a feeling you miss?"],
+[2,"What's been your happiest memory this past year?"],
+[2,"What's your father's name? And tell me one thing about him."],
+[2,"What is something you wouldn't want to change about yourself?"],
+[2,"What title would you give this chapter in your life?"],
+[2,"What question are you trying to answer most in your life right now?"],
+[2,"What is a compliment you wish you received more frequently?"],
+[2,"What has been your earliest recollection of happiness?"],
+[2,"When was the last time you surprised yourself?"],
+[2,"How would you describe the feeling of being loved, in one word?"],
+[2,"What part of your life works? What part of your life hurts?"],
+[2,"What do you crave more of?"],
+[2,"What's been the best compliment a stranger has ever given you?"],
+[2,"Have you changed your mind about anything recently?"],
+[2,"Describe your perfect day!"],
+[2,"What is the most unexplainable thing that's ever happened to you?"],
+[2,"What would your younger self not believe about your life today?"],
+[2,"Has a stranger ever changed your life?"],
+[2,"How are you, really?"],
+[2,"When you're asked how you are, how often do you answer truthfully?"],
+[2,"Finish the sentences: Strangers would describe me as ____. Only I know that I am ____."],
+
+// ---- Level 3: Reflection ----
+[3,"Write down one thing you want to let go of this year. Read it out loud, then rip it up together. (Both players)","wildcard"],
+[3,"Swap a song suggesting your partner may enjoy. (Both players)","wildcard"],
+[3,"Give your partner a compliment you don't think they hear enough.","wildcard"],
+[3,"Take a selfie together.","wildcard"],
+[3,"Admit something.","wildcard"],
+[3,"Dare your partner to do something outside of their comfort zone in the next week. (Both players)","wildcard"],
+[3,"Write down a goal for this year. Fold and exchange. Hold each other accountable. (Both players)","wildcard"],
+[3,"Both players write a note to your younger selves. (1 minute) Option to compare.","wildcard"],
+[3,"Give your partner a hug. Not the crappy kind — a warm, fluffy one.","wildcard"],
+[3,"Write a song about your partner. (30 seconds) Then sing it aloud, get into it! (Both players)","wildcard"],
+[3,"Both players share something you're most grateful for in this current moment.","wildcard"],
+[3,"Create your own question. Make it count.","wildcard"],
+[3,"Play a round of rock, paper, scissors. Winner can ask their partner anything — loser must answer.","wildcard"],
+[3,"Scroll through each other's Instagrams. Find the picture you feel best represents your partner's essence, and say why you chose that image.","wildcard"],
+[3,"Give each other nicknames.","wildcard"],
+[3,"What do you think my superpower is?"],
+[3,"Based on what you know about me, do you have any Netflix recommendations?"],
+[3,"What do I need to hear right now?"],
+[3,"Based on what you learned about me, does my social media accurately reflect who I am? Why or why not?"],
+[3,"What can I help you with?"],
+[3,"If we were in a band, what would our name be?"],
+[3,"If you could prescribe me one thing to do for the rest of this month, what would it be and why?"],
+[3,"What am I most qualified to give advice about?"],
+[3,"What about me is hardest for you to understand?"],
+[3,"Based on what you learned about me, what book would you recommend I read?"],
+[3,"What do you think I fear the most?"],
+[3,"What do you admire most about me?"],
+[3,"What is a lesson you will take away from our conversation?"],
+[3,"What answer of mine made you light up?"],
+[3,"What do you think our most important similarity is?"],
+[3,"How does one earn your vulnerability? Have I earned it? How can I earn more?"],
+[3,"When in this game did you feel most connected to me?"],
+[3,"What do you recommend I let go of, if anything?"],
+[3,"What do you think I should know about myself that perhaps I'm unaware of?"],
+[3,"What has this conversation taught you about yourself?"],
+[3,"What would make you feel closer to me?"],
+[3,"What do you think my weakness is?"],
+[3,"Why do you think we met?"],
+[3,"How do our personalities complement each other?"],
+[3,"What parts of yourself do you see in me?"],
+[3,"When this game is over, what will you remember about me?"],
+[3,"In one word, how would you describe our conversation?"],
+[3,"In one word, describe how you feel right now."],
+[3,"What can we create together?"],
+[3,"What question were you most afraid to answer?"],
+[3,"Do you believe everyone has a calling? If so, do you think I've found mine?"],
+[3,"What would be the perfect gift for me?"],
+[3,"What about me most surprised you?"],
+[3,"How would you describe me to a stranger?"],
+[3,"What do you think my defining characteristic is?"],
+
+// ---- Depth: after-hours, the ones that sit heavier ----
+[ "d","What's something you've never said out loud to anyone?"],
+["d","Who do you wish you'd told \"I love you\" one more time?"],
+["d","What silence are you still carrying?"],
+["d","What version of yourself do you miss?"],
+["d","What do you do with the sadness no one sees?"],
+["d","What's a goodbye you never got to finish?"],
+["d","What's the loneliest you've ever felt in a room full of people?"],
+["d","What's a memory that still stings, even now?"],
+["d","What do you carry that was never yours to carry?"],
+["d","Who taught you it wasn't safe to be sad in front of them?"],
+["d","What's the hardest thing you've kept to yourself this year?"],
+["d","What would you want someone who's gone to know, if they could hear you right now?"],
+["d","What does \"I'm fine\" actually mean, when you say it?"],
+["d","What's a wound that healed, but crooked?"],
+["d","If your younger self could see you today, what would worry them? What would relieve them?"],
+["d","What's something you forgive yourself for, right now, out loud?"],
+["d","What do you wish someone had asked you, back when you needed it most?"],
+["d","What's a fear you've never told anyone, not even the people closest to you?"],
+["d","When did you last let yourself fully feel something, instead of pushing through it?"],
+["d","What's the difference between how you seem and how you actually are, most days?"],
+["d","What are you still waiting for someone to notice about you?"],
+["d","What's a chapter of your life you haven't let anyone read?"],
+["d","What would it mean for you to finally put something down?"],
+
+// ---- Final Card ----
+["f","Each player, write a message to the other. Fold and exchange. Open only once you two have parted."]
+];
+
+// De-duplicate exact (level+text) repeats, so the game never hands you
+// the same card twice in a row.
+const seen = new Set();
+const CARDS = [];
+RAW.forEach(([level, text, tag]) => {
+  const key = level + "|" + text;
+  if (seen.has(key)) return;
+  seen.add(key);
+  CARDS.push({level, text, tag: tag || null});
+});
+
+const DECKS = {
+  1: {name:"Perception", label:"Level I", color:"var(--c1)", soft:"var(--c1-soft)", seal:"I"},
+  2: {name:"Connection", label:"Level II", color:"var(--c2)", soft:"var(--c2-soft)", seal:"II"},
+  3: {name:"Reflection", label:"Level III", color:"var(--c3)", soft:"var(--c3-soft)", seal:"III"},
+  d: {name:"After Hours", label:"Depth", color:"var(--cd)", soft:"var(--cd-soft)", seal:"◐"},
+  f: {name:"Final Card", label:"Final", color:"var(--cw)", soft:"var(--cw-soft)", seal:"✎"},
+};
+const DECK_KEYS = [1,2,3,'f'];
+const TYPE_KICKER = {1:"Perception", 2:"Connection", 3:"Reflection", d:"After Hours", f:"Final Card"};
+const TAG_ICON = {wildcard:"✶", reminder:"✳"};
+
+let state = {
+  activeDeck: 1,      // 1, 2, 3, or 'f' (final card)
+  drawn: {},           // deckKey -> count drawn
+  pool: {},            // deckKey -> shuffled remaining indices
+  current: null,
+  flipped: false,
+};
+
+function deckIndices(key){
+  return CARDS.map((c,i)=>i).filter(i => CARDS[i].level === key);
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function initDeck(key){
+  state.pool[key] = shuffle(deckIndices(key));
+  state.drawn[key] = 0;
+}
+
+DECK_KEYS.forEach(initDeck);
+const tabsEl = document.getElementById('tabs');
+const cardEl = document.getElementById('card');
+const cardFront = document.getElementById('cardFront');
+const drawBtn = document.getElementById('drawBtn');
+const shuffleBtn = document.getElementById('shuffleBtn');
+const progressLabel = document.getElementById('progressLabel');
+const progressFill = document.getElementById('progressFill');
+const deckNameEl = document.getElementById('deckName');
+const remainingNote = document.getElementById('remainingNote');
+const toastEl = document.getElementById('toast');
+const cardBackEl = document.getElementById('cardBack');
+const backMarkEl = document.getElementById('backMark');
+const backLabelEl = document.getElementById('backLabel');
+const vhsHudEl = document.getElementById('vhsHud');
+const vhsTimeEl = document.getElementById('vhsTime');
+
+function buildTabs(){
+  tabsEl.innerHTML = '';
+  DECK_KEYS.forEach(key=>{
+    const d = DECKS[key];
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (state.activeDeck===key ? ' active' : '');
+    const label = key==='f' ? 'Final' : key==='d' ? 'Depth' : 'L'+key;
+    btn.innerHTML = `<span class="dot" style="background:${d.color}"></span>${label}`;
+    btn.onclick = () => switchDeck(key);
+    tabsEl.appendChild(btn);
+  });
+}
+
+function updateCardBack(){
+  const key = state.activeDeck;
+  const isDepth = key === 'd';
+  cardBackEl.classList.toggle('vhs', isDepth);
+  vhsHudEl.style.display = isDepth ? 'flex' : 'none';
+  backMarkEl.textContent = isDepth ? '◐' : '✳';
+  backLabelEl.textContent = isDepth ? 'After Hours — tap to draw' : 'Tap to draw';
+}
+
+function switchDeck(key){
+  state.activeDeck = key;
+  state.current = null;
+  state.flipped = false;
+  cardEl.classList.remove('flipped');
+  buildTabs();
+  updateCardBack();
+  renderBack();
+  updateProgress();
+}
+
+function totalFor(key){ return deckIndices(key).length; }
+
+function updateProgress(){
+  const key = state.activeDeck;
+  const d = DECKS[key];
+  const total = totalFor(key);
+  const used = state.drawn[key];
+  progressLabel.textContent = `${used} / ${total} drawn`;
+  deckNameEl.textContent = d.name;
+  progressFill.style.width = total ? (used/total*100)+'%' : '0%';
+  progressFill.style.background = d.color;
+  const left = total - used;
+  remainingNote.textContent = left > 0
+    ? `${left} card${left===1?'':'s'} left in ${d.name}`
+    : `${d.name} deck complete — reshuffle to go again`;
+  drawBtn.textContent = left > 0 ? 'Draw a card' : 'Deck complete';
+}
+
+function renderBack(){
+  cardEl.classList.remove('flipped');
+}
+
+function showToast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>toastEl.classList.remove('show'), 1800);
+}
+
+function renderFront(cardData){
+  const deckKey = cardData.level;
+  const d = DECKS[deckKey];
+  const tagLabel = cardData.tag ? (cardData.tag === 'wildcard' ? 'Wildcard' : 'Reminder') : null;
+  const kicker = tagLabel ? `${TYPE_KICKER[deckKey]} · ${tagLabel}` : TYPE_KICKER[deckKey];
+  const sealIcon = cardData.tag ? TAG_ICON[cardData.tag] : d.seal;
+  const small = cardData.text.length > 90 ? 'small' : '';
+  cardFront.style.color = 'var(--ink)';
+  cardFront.innerHTML = `
+    <div class="card-top">
+      <div class="seal" style="color:${cardData.tag ? 'var(--cw)' : d.color}">${sealIcon}</div>
+      <div class="kicker"><b>${kicker}</b>Card ${state.drawn[state.activeDeck]} of ${totalFor(state.activeDeck)}</div>
+    </div>
+    <div class="card-question ${small}">${cardData.text}</div>
+    <div class="card-foot">
+      <span>We're Not Really Strangers</span>
+      <span>${d.name}</span>
+    </div>
+  `;
+}
+
+function drawCard(){
+  const key = state.activeDeck;
+  if (!state.pool[key] || state.pool[key].length === 0){
+    showToast('Deck complete — tap ⟳ to reshuffle');
+    cardEl.classList.add('shake');
+    setTimeout(()=>cardEl.classList.remove('shake'), 400);
+    return;
+  }
+  const idx = state.pool[key].pop();
+  state.drawn[key] += 1;
+  state.current = CARDS[idx];
+
+  if (!state.flipped){
+    renderFront(state.current);
+    cardEl.classList.add('flipped');
+    state.flipped = true;
+  } else {
+    // already showing a face-up card — flip back then forward with new content
+    cardEl.classList.remove('flipped');
+    setTimeout(()=>{
+      renderFront(state.current);
+      cardEl.classList.add('flipped');
+    }, 330);
+  }
+  updateProgress();
+}
+
+drawBtn.addEventListener('click', drawCard);
+cardEl.addEventListener('click', drawCard);
+
+shuffleBtn.addEventListener('click', ()=>{
+  initDeck(state.activeDeck);
+  state.current = null;
+  state.flipped = false;
+  renderBack();
+  updateProgress();
+  showToast(`${DECKS[state.activeDeck].name} deck reshuffled`);
+});
+
+document.getElementById('resetAll').addEventListener('click', ()=>{
+  DECK_KEYS.forEach(initDeck);
+  state.current = null;
+  state.flipped = false;
+  renderBack();
+  updateProgress();
+  showToast('All decks reset');
+});
+
+buildTabs();
+updateCardBack();
+updateProgress();
+
+// faux camcorder timestamp for the Depth deck's card back
+let vhsSeconds = 0;
+setInterval(()=>{
+  vhsSeconds++;
+  const h = String(Math.floor(vhsSeconds/3600)).padStart(2,'0');
+  const m = String(Math.floor((vhsSeconds%3600)/60)).padStart(2,'0');
+  const s = String(vhsSeconds%60).padStart(2,'0');
+  vhsTimeEl.textContent = `${h}:${m}:${s}`;
+}, 1000);
+</script>
+</body>
+</html>
