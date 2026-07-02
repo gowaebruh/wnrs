@@ -12,8 +12,16 @@
 <link rel="manifest" href="manifest.json">
 <title>We're Not Really Strangers</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
 <style>
+  @font-face{
+    font-family:'Gotham';
+    src:url('gotham-bold.woff') format('woff'),
+        url('gotham-bold.otf') format('opentype');
+    font-weight:700;
+    font-style:normal;
+    font-display:swap;
+  }
   :root{
     --bg:#a3080f;
     --bg-vignette: radial-gradient(ellipse at 50% 15%, #c00e17 0%, #a3080f 55%, #7c0409 100%);
@@ -51,7 +59,7 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    padding:14px 14px 16px;
+    padding:max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
     -webkit-font-smoothing:antialiased;
     overflow:hidden;
     overscroll-behavior:none;
@@ -59,7 +67,7 @@
 
   .wrap{width:100%;max-width:560px;height:100%;display:flex;flex-direction:column;}
 
-  header{text-align:center;margin-bottom:10px;flex:0 0 auto;}
+  header{text-align:center;margin-bottom:6px;flex:0 0 auto;}
   .eyebrow{
     font-size:10px;
     letter-spacing:.22em;
@@ -86,7 +94,7 @@
     border:1px solid var(--panel-line);
     border-radius:14px;
     padding:5px;
-    margin:10px 0 10px;
+    margin:8px 0 8px;
     flex:0 0 auto;
   }
   .tab{
@@ -95,10 +103,10 @@
     background:transparent;
     color:var(--muted);
     font-family:'Inter',sans-serif;
-    font-size:12.5px;
+    font-size:11px;
     font-weight:600;
-    letter-spacing:.02em;
-    padding:10px 4px;
+    letter-spacing:.01em;
+    padding:10px 2px;
     border-radius:10px;
     cursor:pointer;
     transition:background .2s, color .2s;
@@ -113,7 +121,7 @@
     align-items:center;
     font-size:10.5px;
     color:var(--muted);
-    margin-bottom:8px;
+    margin-bottom:6px;
     padding:0 2px;
     flex:0 0 auto;
   }
@@ -136,7 +144,7 @@
     align-items:center;
     justify-content:center;
     position:relative;
-    margin-bottom:12px;
+    margin-bottom:10px;
   }
   .deck-shadow-card{
     position:absolute;
@@ -181,14 +189,23 @@
     align-items:center;
     justify-content:center;
   }
-  .face-back .mark{
-    width:88px;height:88px;border-radius:50%;
-    border:1.5px solid rgba(255,255,255,.5);
-    display:flex;align-items:center;justify-content:center;
-    font-family:'Fraunces',serif;font-style:italic;font-size:30px;color:rgba(255,255,255,.85);
+  .back-mid{text-align:center;}
+  .back-title{
+    font-family:'Gotham','Montserrat',sans-serif;font-weight:700;font-style:normal;
+    font-size:28px;color:rgba(255,255,255,.94);letter-spacing:.01em;margin-bottom:6px;
   }
-  .face-back .back-label{
-    margin-top:16px;font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.55);
+  .back-sub{
+    font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    color:rgba(255,255,255,.6);
+  }
+  .back-wordmark{
+    position:absolute;left:0;right:0;bottom:34px;text-align:center;
+    font-size:10.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+    color:rgba(255,255,255,.45);
+  }
+  .back-hint{
+    position:absolute;left:0;right:0;bottom:14px;text-align:center;
+    font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.3);
   }
 
   /* ---- Depth deck: after-hours / camcorder mood, no third-party art ---- */
@@ -210,8 +227,9 @@
     pointer-events:none;
   }
   @keyframes vhsScan{0%{transform:translateY(-10%)} 100%{transform:translateY(110%)}}
-  .face-back.vhs .mark{border-color:rgba(232,229,240,.4);color:rgba(232,229,240,.8);}
-  .face-back.vhs .back-label{color:rgba(232,229,240,.5);}
+  .face-back.vhs .back-title{color:rgba(232,229,240,.85);}
+  .face-back.vhs .back-sub{color:rgba(232,229,240,.5);}
+  .face-back.vhs .back-wordmark{color:rgba(232,229,240,.4);}
   .vhs-hud{
     position:absolute;
     left:16px;right:16px;bottom:14px;
@@ -350,10 +368,12 @@
     <div class="deck-shadow-card" id="shadowCard"></div>
     <div class="card" id="card">
       <div class="face face-back" id="cardBack">
-        <div>
-          <div class="mark" id="backMark">✳</div>
-          <div class="back-label" id="backLabel">Tap to draw</div>
+        <div class="back-mid">
+          <div class="back-title" id="backTitle">Level 1</div>
+          <div class="back-sub" id="backSub">(Perception)</div>
         </div>
+        <div class="back-wordmark">We're Not Really Strangers</div>
+        <div class="back-hint" id="backHint">Tap to draw</div>
         <div class="vhs-hud" id="vhsHud" style="display:none;">
           <span class="rec"><span class="dot"></span>REC</span>
           <span id="vhsTime">00:00:00</span>
@@ -634,8 +654,9 @@ const deckNameEl = document.getElementById('deckName');
 const remainingNote = document.getElementById('remainingNote');
 const toastEl = document.getElementById('toast');
 const cardBackEl = document.getElementById('cardBack');
-const backMarkEl = document.getElementById('backMark');
-const backLabelEl = document.getElementById('backLabel');
+const backTitleEl = document.getElementById('backTitle');
+const backSubEl = document.getElementById('backSub');
+const backHintEl = document.getElementById('backHint');
 const vhsHudEl = document.getElementById('vhsHud');
 const vhsTimeEl = document.getElementById('vhsTime');
 
@@ -645,20 +666,20 @@ function buildTabs(){
     const d = DECKS[key];
     const btn = document.createElement('button');
     btn.className = 'tab' + (state.activeDeck===key ? ' active' : '');
-    const label = key==='f' ? 'Final' : key==='d' ? 'Depth' : 'L'+key;
+    const label = key==='f' ? 'Final' : key==='d' ? 'Depth' : 'Level '+key;
     btn.innerHTML = `<span class="dot" style="background:${d.color}"></span>${label}`;
     btn.onclick = () => switchDeck(key);
     tabsEl.appendChild(btn);
   });
 }
 
+const BACK_TITLE = {1:'Level 1', 2:'Level 2', 3:'Level 3', f:'Final'};
 function updateCardBack(){
   const key = state.activeDeck;
-  const isDepth = key === 'd';
-  cardBackEl.classList.toggle('vhs', isDepth);
-  vhsHudEl.style.display = isDepth ? 'flex' : 'none';
-  backMarkEl.textContent = isDepth ? '◐' : '✳';
-  backLabelEl.textContent = isDepth ? 'After Hours — tap to draw' : 'Tap to draw';
+  const d = DECKS[key];
+  backTitleEl.textContent = BACK_TITLE[key] || d.label;
+  backSubEl.textContent = key === 'f' ? '(Last Card)' : `(${d.name})`;
+  backHintEl.textContent = 'Tap to draw';
 }
 
 function switchDeck(key){
